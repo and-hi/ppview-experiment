@@ -47,3 +47,6 @@ vignettes/*.pdf
 /*_files/
 
 # End of https://www.toptal.com/developers/gitignore/api/r
+
+# Compiled Stan models
+*.rds
