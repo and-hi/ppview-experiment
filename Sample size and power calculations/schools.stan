@@ -14,5 +14,5 @@ transformed parameters {
 }
 model {
   target += normal_lpdf(eta | 0, 1);       // prior log-density
-//  target += normal_lpdf(y | theta, sigma); // log-likelihood
+  target += normal_lpdf(y | theta, sigma); // log-likelihood
 }
