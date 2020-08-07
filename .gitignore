@@ -50,3 +50,6 @@ vignettes/*.pdf
 
 # Compiled Stan models
 *.rds
+
+# Assets folder
+/assets/

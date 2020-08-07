@@ -78,3 +78,19 @@ coin_stanFit = sampling( object=coinDSO , data=coin_simu_data ,
 plot(coin_stanFit)
 print(coin_stanFit)
 
+
+######
+# Prior Predictive Check
+######
+
+N = 100
+x = rnorm(N, mean = 0, sd = 1)
+poisson_data = list(N = N, x = x)
+
+poissonDSO = stan_model(file = 'Sample size and power calculations/prior_predictive_poisson.stan')
+  
+poisson_stanFit = sampling(object=poissonDSO , data=poisson_data ,
+                         chains=4 , iter=1000 , warmup=200 , thin=1,
+                         algorithm="Fixed_param")
+summary(poisson_stanFit)
+plot(poisson_stanFit)
