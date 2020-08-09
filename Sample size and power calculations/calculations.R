@@ -74,7 +74,6 @@ prior_predictive_DSO = stan_model(file = 'Sample size and power calculations/pri
 prior_predictive_stanFit = sampling(object=prior_predictive_DSO , data=prior_predictive_data ,
                            chains=4 , iter=1000 , warmup=0 , thin=1,
                            algorithm="Fixed_param")
-summary(prior_predictive_stanFit)
 plot(prior_predictive_stanFit, pars = c("beta_treatment", "post_meat_servings_sim[1]", "post_meat_servings_sim[23]", "post_meat_servings_sim[2]", "post_meat_servings_sim[24]"), show_density=TRUE)
 print(prior_predictive_stanFit)
 
