@@ -1,3 +1,6 @@
+library(ggplot2)
+library(dplyr)
+
 ###
 # Simulate independent variables
 ###
@@ -49,19 +52,34 @@ ggplot(data = meat_long, aes(x = time, y = meat_servings, group = id)) + geom_li
 
 ####
 
-simulate_data <- function(n, treatment_effect_size){
+simulate_data <- function(n, treatment_effect){
   min_meat <- 0
   max_meat <- 21
-  pre_meat_servings <- runif(n, min_meat, max_meat)
-  treatment <- c(rep.int(c(rep.int(0, n/4), rep.int(1, n/4)),2))
+  pre_meat_servings <- round(runif(n, min_meat, max_meat), digits = 0)
+  treatment <- c(rep(0, n/2), rep(1, n/2))
+  post_meat_servings = rpois(n, pre_meat_servings * exp(treatment_effect * treatment) + 0.01)
+  simulated_data = tibble(post_meat_servings, pre_meat_servings, treatment)
+  return(simulated_data)
 }
 
-sim_data_and_fit_model(b){
-  #sim treatment effect
-  for (i in treatment_effects) {
-    data <- simulate_data(n, treatment_effect_size)
-    glm.fit <- glm( post_meat_servings ~ pre_meat_servings + treatment)
+sim_data_and_fit_model <- function(sample_size, number_simulations) {
+  treatment_effects = rnorm(number_simulations, -0.2, 0.1)
+  data = vector("list", number_simulations)
+  glm_fit = vector("list", number_simulations)
+  for (i in seq_len(number_simulations)) {
+    data[[i]] <- simulate_data(sample_size, treatment_effects[i])
+    glm_fit[[i]] <- glm( post_meat_servings ~ pre_meat_servings + treatment,
+                data = data[[i]],
+                family = "poisson"
+                )
   }
+  return(data, glm_fit)
   
 }
 
+sim_data = simulate_data(10, -0.2)
+
+list_of_sims = sim_data_and_fit_model(10, 5)
+sample_size =10
+number_simulations = 5
+i =1
