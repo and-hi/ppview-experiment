@@ -45,3 +45,23 @@ ggplot(data = data_simu, aes(x = treatment, y = post_meat_servings, group= treat
 
 meat_long = tibble(id = rep(seq(1:100),2), time = c(rep("pre", 100), rep("post", 100)), meat_servings = c(pre_meat_servings, post_meat_servings))
 ggplot(data = meat_long, aes(x = time, y = meat_servings, group = id)) + geom_line()
+
+
+####
+
+simulate_data <- function(n, treatment_effect_size){
+  min_meat <- 0
+  max_meat <- 21
+  pre_meat_servings <- runif(n, min_meat, max_meat)
+  treatment <- c(rep.int(c(rep.int(0, n/4), rep.int(1, n/4)),2))
+}
+
+sim_data_and_fit_model(b){
+  #sim treatment effect
+  for (i in treatment_effects) {
+    data <- simulate_data(n, treatment_effect_size)
+    glm.fit <- glm( post_meat_servings ~ pre_meat_servings + treatment)
+  }
+  
+}
+
