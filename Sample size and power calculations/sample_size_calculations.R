@@ -94,8 +94,8 @@ predict(pois_reg_stanFit)
 
 posterior <- as.data.frame(pois_reg_stanFit)
 posterior %>%
-  mutate(treated = exp(alpha+beta_pre_meat*12+beta_treatment),
-         untreated = exp(alpha+beta_pre_meat*12),
+  mutate(treated = exp(alpha+beta_pre_meat*log(12)+beta_treatment),
+         untreated = exp(alpha+beta_pre_meat*log(12)),
          diff = untreated -treated) ->posterior
 
 ggplot(data = posterior, aes(diff)) + geom_density()
