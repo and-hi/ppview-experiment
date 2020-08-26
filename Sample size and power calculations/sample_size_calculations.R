@@ -77,31 +77,69 @@ library("rstan")
 options(mc.cores = parallel::detectCores())
 rstan_options(auto_write = TRUE)
 
+
+sim_data <- sim_data %>%
+  mutate(log_pre_meat_servings = log(pre_meat_servings+0.001))
+
 stan_data = list(N=nrow(sim_data),
                  treatment = sim_data$treatment,
-                 pre_meat_servings = sim_data$pre_meat_servings,
+                 pre_meat_servings = sim_data$log_pre_meat_servings,
                  post_meat_servings = sim_data$post_meat_servings)
 pois_reg_DSO = stan_model(file = 'Sample size and power calculations/poisson_regression.stan')
-pois_reg_stanFit = sampling(object=pois_reg_DSO , data=stan_data ,
+pois_reg_stanFit_log = sampling(object=pois_reg_DSO , data=stan_data ,
                                     chains=4 , iter=1000 , warmup=200 , thin=1)
-plot(pois_reg_stanFit)
-print(pois_reg_stanFit)
+plot(pois_reg_stanFit_log)
+print(pois_reg_stanFit_log)
 
-traceplot((pois_reg_stanFit))
+traceplot((pois_reg_stanFit_log))
 
-
-predict(pois_reg_stanFit)
+###
+# Extract relevant info
+###
 
 posterior <- as.data.frame(pois_reg_stanFit)
+posterior_log <- as.data.frame(pois_reg_stanFit_log)
+
+
+summary(posterior_log)
+post_interval_80 = quantile(posterior_log$beta_treatment, c(0.1,0.9))
+widt_post_interval_80 = diff(post_interval_80)
+
+prob_below_zero = sum(posterior_log$beta_treatment<0.0)/length(posterior_log$beta_treatment)
+
 posterior %>%
-  mutate(treated = exp(alpha+beta_pre_meat*log(12)+beta_treatment),
-         untreated = exp(alpha+beta_pre_meat*log(12)),
-         diff = untreated -treated) ->posterior
+  mutate(treated_12 = exp(alpha+beta_pre_meat*log(12)+beta_treatment),
+         untreated_12 = exp(alpha+beta_pre_meat*log(12)),
+         diff_12 = treated -untreated) ->posterior
+
+###
+# Visualization of 2 specifications of log(lambda)
+###
+
+
+
+
 
 ggplot(data = posterior, aes(diff)) + geom_density()
 
 sim_data <- sim_data %>%
-  mutate(prediction = exp(median(posterior$alpha)+median(posterior$beta_pre_meat)*log(pre_meat_servings)+median(posterior$beta_treatment)*treatment))
+  mutate(prediction = exp(median(posterior$alpha)+
+                                median(posterior$beta_pre_meat)*pre_meat_servings+
+                                median(posterior$beta_treatment)*treatment),
+         prediction_log = exp(median(posterior_log$alpha)+
+                                median(posterior_log$beta_pre_meat)*log_pre_meat_servings+
+                                median(posterior_log$beta_treatment)*treatment))
 
   
-ggplot(sim_data, aes(x=post_meat_servings,y=prediction)) + geom_point()
+ggplot(sim_data, aes(x=post_meat_servings,y=prediction_log)) + geom_point()
+
+ggplot(sim_data) +
+  geom_point(aes(pre_meat_servings,post_meat_servings,color = factor(treatment)), alpha = 0.2) +
+  geom_line(aes(x=pre_meat_servings,y=prediction, group=treatment, color=factor(treatment)), size=1.2)+
+  geom_line(aes(x=pre_meat_servings,y=prediction_log, group=treatment, color=factor(treatment)), linetype= 10, size=1.2)
+
+
+
+
+
+
